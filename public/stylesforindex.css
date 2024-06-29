@@ -1,0 +1,69 @@
+body{
+    background-image: linear-gradient(to right, #f6cf92, #f6a192, #f6b092);
+    height: 1000px;
+    width: 100vw;
+}
+header{
+    width: 100vw;
+}
+.intr{
+    position: relative;
+    top: 80px;
+    width: 100vw;
+    height: auto;
+    /* border: 1px solid red; */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.sub-header{
+    font-size: 40px;
+    text-align: center;
+    font-family: "PT Serif", serif;
+    font-weight: 400;
+    font-style: normal;
+
+}
+.for-image img{
+    width: 300px;
+    height: 300px;
+    /* opacity: 0.8; */
+    /* border-radius: 10%; */
+}
+.features h3{
+    font-family: "PT Serif", serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 60px;
+    text-align: center;
+    margin-bottom: 10px
+}
+.features p, li{
+    font-family: "PT Serif", serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 25px;
+    text-align: center;
+    text-decoration: none;
+    color: rgba(0, 0, 0, 0.674);
+    list-style-type: none;
+}
+.features p{
+    color: black;
+}
+.features{
+    position: absolute;
+    top: 120%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: seashell;
+    width: 700px;
+    height: auto;
+    padding: 20px;
+    border-radius: 14px;
+    box-shadow:1px 1px 10px ;
+    transition: cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+.features:hover{
+    cursor: pointer;
+}

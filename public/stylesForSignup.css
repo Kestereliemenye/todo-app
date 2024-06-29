@@ -1,0 +1,26 @@
+body {
+    background-image: linear-gradient(to right, #f6cf92, #f6a192, #f6b092);
+    height: 100vh;
+}
+header{
+    width: 100vw;
+}
+
+.sign {
+    border-bottom: 2px solid #f6cf92;
+}
+.first-img {
+    position: relative;
+    height: 300px;
+    width: 400px;
+    left: 800px;
+    top: 150px;
+}
+
+.second-img {
+    position: relative;
+    height: 400px;
+    width: 400px;
+    left: -400px;
+    top: 60px;
+}

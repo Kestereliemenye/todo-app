@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOALS</title>
+    <link rel="icon" href="images/_13794220.png" type="image/x-icon">
+    <link rel="icon" href="/public/images/_13794220.png" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="stylesForHome.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+   
+</head>
+
+<body>
+    <header>
+        <!-- HEADER -->
+        <div class="logo-words">
+            <span>Goals.App</span>
+            <p class="intro">Lets help you achieve your goal</p>
+        </div>
+        <div class="profile">
+            <!-- Profile icon -->
+            <i id="user-circle" class="fa fa-user-circle fa-2x" aria-hidden="true"></i>
+            <!-- profile name -->
+             <p><%= username %></p>
+        </div>
+        <form action="/logout" method="post">
+            <button class="logout">Logout</button>
+        </form>
+    </header>
+
+    <!-- Welcome  message with name -->
+    <div class="welcome-name">
+        <p>Welcome <%= username %></p>
+    </div> 
+    <div class="welcome-msg">
+        <p>You're all set to start organizing your tasks!</p>
+        <p>Here are a few tips to get started:</p>
+        <!-- <ul>
+                <li>Add tasks by clicking the "Add Task" button.</li>
+                <li>Mark tasks as completed by checking the checkbox next to them.</li>
+                <li>Edit or delete tasks as needed using the provided options.</li>
+            </ul>
+            <p>Feel free to explore the app and let us know if you have any questions or feedback!</p> -->
+    </div>
+
+
+
+<!-- buttons  to create task collections -->
+    <div class="to-create-tasks">
+        <button id="create-task" class="one-task">Create Task</button>
+        <button id="create-collection" class="mul-task">Create Collection</button>
+    </div>
+
+    <!-- popup for creation of single task -->
+<div class="popup-task" id="popup1">
+    <div class="overlay"></div>
+    <div class="content">
+        <div class="close-button" id="close-button">&times;</div>
+      <h3>Goals.App</h3>
+      <h4>New Task</h4>
+      <!-- FORM CREATION -->
+      <form action="/home/task" method="post" class="for-task" id="taskForm">
+        <!-- Title of task -->
+       <div class="for-title">
+        <label for="task-title">Title:</label>
+        <input type="text" name="title" id="title" required autocomplete="off">
+       </div>
+        <!-- details of task -->
+       <div class="for-details">
+        <label for="details">Details:</label>
+        <input type="text" name="details" id="detail" required autocomplete="off">
+       </div>
+        <!-- Type of task -->
+       <div class="for-type">
+        <label for="type">Type:</label>
+        <select name="usage" id="usage">
+            <option value="school">School</option>
+            <option value="coding">Coding</option>
+            <option value="personal">Personal</option>
+            <option value="work">Work</option>
+        </select>
+       </div>
+        <!--ADD button   -->
+       <div class="for-submit">
+        <button type="submit" id="add-task">Add task</button>
+       </div>
+      </form>
+      
+    </div>
+</div>
+<!-- Popup for Collections -->
+ <div class="popup-collection" id="popup2">
+    <div class="overlay-coll"></div>
+        <div class="content-coll">
+        <div class="close-button" id="close-button2">&times;</div>
+        <h3>Goals.App</h3>
+        <h4>New Collection</h4>
+        <!-- FORM CREATION -->
+        <form action="/home/collection" method="post" class="for-task" id="collForm">
+            <!-- Title of task -->
+            <div class="for-title">
+                <label for="task-title">Title:</label>
+                <input type="text" name="title" id="title1" required autocomplete="off">
+            </div>
+            <!-- details of task -->
+            <div class="for-details">
+                <label for="details">Details:</label>
+                <input type="text" name="details" id="detail1" required autocomplete="off">
+            </div>
+            <!-- Type of task -->
+            <div class="for-type">
+                <label for="type">Type:</label>
+                <select name="usage" id="usage">
+                    <option value="school">School</option>
+                    <option value="coding">Coding</option>
+                    <option value="personal">Personal</option>
+                    <option value="work">Work</option>
+                </select>
+            </div>
+            <!-- SUB Task -->
+       <div class="ST">
+        <h4 id="h4-St">Subtask</h4>
+        <select name="" id="st-select">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+       </div>
+            <div id="subtask">
+            <!-- sub task INPUT--> 
+
+            </div>
+
+
+
+
+
+
+
+
+
+            <!--ADD button   -->
+            <div class="for-submit">
+                <button type="submit" id="add-coll">Add Collection</button>
+            </div>
+        </form>
+
+        </div>
+ </div>
+
+
+
+
+
+        <!-- To search for task -->
+    <div class="display-container">
+      <div class="search-task">
+        <!-- search form -->
+       <form action="" id="search-task">
+        <input type="search" id="search" placeholder="Search tasks...">
+        <!-- button -->
+        <button type="submit" id="search-button">Search</button>
+       </form>
+      </div>
+      <!-- Headers for display task -->
+       <div class="ongoing">
+        <div class="display-header">
+            <div class="p-head">
+                <p>Ongoing:</p>
+            </div>
+            <div class="btn-head">
+                <button id="task-button" class="button">Task</button>
+                <button id="coll-btn" class="button">Collection</button>
+            </div>
+         </div>
+             <button id="comp-btn" class="buttons">Completed</button>
+       </div>
+
+       <!-- To display task -->
+        <div class="displayTask" id="disp">
+            <input type="text" readonly placeholder="No ongoing Task" id="no-task-message" class="err-msg">
+            <input type="text" hidden readonly placeholder="No ongoing Collection" id="no-coll-message" class="err-msg">
+            <ol id="task-display">
+
+            </ol>
+
+        </div>
+
+    </div>
+
+
+
+
+
+<script src="homeFunc.js"></script>
+<script src="collection.js"></script>
+</body>
+
+</html>
