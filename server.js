@@ -5,7 +5,9 @@ const bodyParser = require("body-parser")
 const path = require("path")
 //impoting sessions libiary
 const session = require("express-session")
-const {store , userAuthentication, Task, Collection} = require("./configuration");
+const { store, userAuthentication, Task, Collection } = require("./configuration");
+require("dotenv").config()
+const jwt = require("jsonwebtoken")
 const { log, error } = require("console")
 const { name } = require("ejs")
 // const { create } = require("domain")
@@ -29,16 +31,47 @@ app.use(express.static("public")) // to use the public dir
 // takes the values of the form 
 app.use(express.urlencoded({ extended: false }))
 // Parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }))
+// app.use(bodyParser.urlencoded({ extended: false }))
+
+
+
+
+
+
+
+
+
+
+// middleware to authenticate token
+function authToken(req, res, next) {
+    
+    const authHeader = req.headers["authorization"]
+    // to check the token
+    const token = authHeader && authHeader.split(" ")[1]
+    if(token == null) return res.sendStatus(401)
+    // we know there is token to verify
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+        if (err) return res.sendStatus(403)
+        req.user = user
+        next()
+    })
+}
+
+
+
+
+
+
+
 
 // to auth a user to access the home page
-const isAuth = (req, res, next) => {
-    if (req.session.isAuth) {
-        next()
-    } else {
-        res.redirect("/login")
-    }
-}
+// const isAuth = (req, res, next) => {
+//     if (req.session.isAuth) {
+//         next()
+//     } else {
+//         res.redirect("/login")
+//     }
+// }
 
 
 app.set("view engine", "ejs")
@@ -65,7 +98,7 @@ app.get("/signup", (req, res) => {
 app.get("/login", (req, res) => {
     res.render("login")
 })
-app.get("/home", isAuth,(req, res) => {
+app.get("/home", authToken ,(req, res) => {
     const username = req.query.username;
     res.render("home", {username: username})
 })
@@ -101,14 +134,23 @@ app.post("/home/task", async (req, res) => {
 //         res.status(500).json({error: error.message})
 //    }
 // })
-app.get("/home?username", async (req, res) => {
+app.get("/home/task", async (req, res) => {
     try {
+        console.log("bread");
         const { username } = req.query
-        const user = await userAuthentication.findOne({username})
+        console.log({ username });
+         if (!username) {
+            return res.status(400).json({ error: 'Username  required' });
+        }
+        const user = await userAuthentication.findOne({ name: username})
          if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
-        console.log(user);
+        console.log({ user });
+        const user_id = user._id;
+        console.log({ user_id });
+        
+        return res.status(200).json({message: user})
         
     } catch (error) {
         console.log(error);
@@ -130,7 +172,7 @@ app.delete("/home/tasks/:taskid", async (req, res) => {
 
 // to update/edit a task
 app.put("/home/tasks/:taskid", async (req, res) => {
-    const { taskid } = req.params
+    const { taskID } = req.params
     const {title, details, usage} = req.body
     try {
         const updateTask = await Task.findByIdAndUpdate(taskID, {
@@ -263,11 +305,17 @@ app.post("/login", async (req, res) => {
             // check is passsword is correct
             const ifPasswordMatch = await bcrypt.compare(req.body.password, user.password)
             if (ifPasswordMatch) {
-                req.session.isAuth = true// set  d session
-                res.redirect(`/home?username=${encodeURIComponent(user.name)}`)
+                //jwt token 
+                  // after user has passed the auth of correct name and password use user info for token 
+                const accessToken = jwt.sign({ _id: user._id, name: user.name}, process.env.ACCESS_TOKEN_SECRET)// token secret is in .env file
+                console.log({ accessToken: accessToken })
+                res.json({accessToken})
+                // req.session.isAuth = true// set  d session
+                // res.redirect(`/home?username=${encodeURIComponent(user.name)}`)
             } else {
                 res.status(400).render("login", {message:"incorrect password"})
             }
+
         } else {
             res.status(404).render("login",{message: "User not found"})
         }

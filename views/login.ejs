@@ -77,6 +77,11 @@
             const username = formData.get("name")
             const password = formData.get("password")
 
+
+
+
+
+
             const response = await fetch("/login",{
                 method: "POST",
                 headers: {
@@ -84,9 +89,32 @@
                 },
                 body: `name=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}` // Include password field in the body
             })
+            
+            const data = await response.json()
+            
+            if(response.ok){
+                // to save jwt token
+                localStorage.setItem("accessToken", data.accessToken)
 
-            if(response.redirected){
-                window.location.href = `/home?username=${encodeURIComponent(username)}`;
+                // the authenticated request
+                const accessToken = data.accessToken
+                const authResponse = await fetch("/login",{
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${accessToken}`
+                    }
+                });
+                if(authResponse.ok){
+                    const authData = await authResponse.json()
+                    console.log(authData);
+                    // redirect to home page with useername
+                    window.location.href = `/home?username=${encodeURIComponent(username)}`;
+                } else if(authResponse.status === 401){
+                    alert("unathorized access. please login.")
+                } else{
+                    alert("an error occured")
+                }
+                
             } else if(response.status === 400){
                 alert("Incorrect password")
             }else if(response.status === 404){

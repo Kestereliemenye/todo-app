@@ -54,16 +54,11 @@ document.addEventListener("DOMContentLoaded", function () {
     btn1.addEventListener("click", async function () {
       try {
         console.log("Fetching data...");
-        const response = await fetch("http://localhost:6004/home?username=radiance");
+        const response = await fetch("/home/task?username=radiance");
         console.log("Response received:", response);
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const contentType = response.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-            throw new TypeError("Response not JSON");
         }
 
         const data = await response.json();
