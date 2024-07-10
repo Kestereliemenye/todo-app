@@ -10,6 +10,7 @@ require("dotenv").config()
 const jwt = require("jsonwebtoken")
 const { log, error } = require("console")
 const { name } = require("ejs")
+const cookieParser = require("cookie-parser")
 // const { create } = require("domain")
 
 
@@ -20,6 +21,7 @@ const { name } = require("ejs")
 
 
 const app = express()
+app.use(cookieParser())
 app.use(session({
     secret: "key that will sign d cookie (string)",// a key that will sign the cookie
     resave: false, //we said no to not specifying d user request to d browser
@@ -31,7 +33,7 @@ app.use(express.static("public")) // to use the public dir
 // takes the values of the form 
 app.use(express.urlencoded({ extended: false }))
 // Parse application/x-www-form-urlencoded
-// app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.urlencoded({ extended: false }))
 
 
 
@@ -44,34 +46,49 @@ app.use(express.urlencoded({ extended: false }))
 
 // middleware to authenticate token
 function authToken(req, res, next) {
+    // console.log("Auth function called");
+    const accesstoken = req.cookies.accessToken
+    if (!accesstoken) {
+        if (renewToken(req, res)) {
+            next()
+        }
+    } else {
+         jwt.verify(accesstoken, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+             if (err) { 
+                 try {
+                      return res.json({valid: false, message: "invalid token"})   
+                 } catch (err) {
+                     console.log(err)
+                 }
+             } else {
+                 req.user = user
+                //  console.log(user);
+                 next()
     
-    const authHeader = req.headers["authorization"]
-    // to check the token
-    const token = authHeader && authHeader.split(" ")[1]
-    if(token == null) return res.sendStatus(401)
-    // we know there is token to verify
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-        if (err) return res.sendStatus(403)
-        req.user = user
-        next()
+            }
     })
+    }
 }
 
-
-
-
-
-
-
-
-// to auth a user to access the home page
-// const isAuth = (req, res, next) => {
-//     if (req.session.isAuth) {
-//         next()
-//     } else {
-//         res.redirect("/login")
-//     }
-// }
+// to renew token
+const renewToken = (req, res) => {
+    const refreshtoken = req.cookies.refreshToken
+    let exist = false;
+    if (!refreshtoken) {
+        return res.json({valid:false, message:"no refresh token"})
+    } else {
+         jwt.verify(refreshtoken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+             if (err) { 
+              return res.json({valid: false, message: "invalid refresh token"})   
+             } else {
+                 const accessToken = jwt.sign({ _id: user._id, name: user.name }, process.env.ACCESS_TOKEN_SECRET)
+                res.cookie("accessToken", accessToken, { maxAge: 60000 })
+                exist = true
+            }
+    })
+    }
+    return exist
+}
 
 
 app.set("view engine", "ejs")
@@ -98,24 +115,30 @@ app.get("/signup", (req, res) => {
 app.get("/login", (req, res) => {
     res.render("login")
 })
-app.get("/home", authToken ,(req, res) => {
+app.get("/home", authToken, (req, res) => {
+    // console.log(req.query);
     const username = req.query.username;
+    // console.log("This is username from query", username);
+    // console.log(username);
     res.render("home", {username: username})
 })
 
 // CRUD FOR TASKS
 //post route to create
 
-app.post("/home/task", async (req, res) => {
+app.post("/home/task", authToken,async (req, res) => {
     const { title, details, usage } = req.body;
-    console.log({title, details, usage})
-    if (!title || !details || !usage) {
+    console.log({ title, details, usage })
+    const userID = req.user._id // get the user id form the jwt token 
+    // console.log(userID);
+    if (!title || !details || !usage ||!userID) {
         return res.status(400).send("Missing required fields")
     }
     const newTask = new Task({
         title,
         details,
-        usage
+        usage,
+        userID
     }) 
     try {
         const savedTask = await newTask.save() // creates a nerw task from the  from d req
@@ -124,36 +147,17 @@ app.post("/home/task", async (req, res) => {
         res.status(500).send(error)
     }
 })
-// to display all task according to user
-// app.get("/home/tasks/:userid", async (req, res) => {
-//     try {
-//         const tasks = await Task.find({UserID:req.params.userid});
-//         res.json(tasks)
-//         console.log(tasks);
-//     } catch (error){
-//         res.status(500).json({error: error.message})
-//    }
-// })
-app.get("/home/task", async (req, res) => {
+
+app.get("/home/task", authToken, async (req, res) => {
+    // used the user details from the token
+    const userID = req.user._id
+    // console.log(userID);
     try {
-        console.log("bread");
-        const { username } = req.query
-        console.log({ username });
-         if (!username) {
-            return res.status(400).json({ error: 'Username  required' });
-        }
-        const user = await userAuthentication.findOne({ name: username})
-         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-        console.log({ user });
-        const user_id = user._id;
-        console.log({ user_id });
-        
-        return res.status(200).json({message: user})
+        const tasks = await Task.find({userID})
+        return res.status(200).json(tasks)
         
     } catch (error) {
-        console.log(error);
+        res.status(500).send(error)
     }
 })
 // to delete task
@@ -299,19 +303,26 @@ app.post("/signup", async (req, res) => {
 
 // to log a user
 app.post("/login", async (req, res) => {
+    const { name, password } = req.body
     try {
-        const user = await userAuthentication.findOne({ name: req.body.name })
+        const user = await userAuthentication.findOne({ name: name })
         if (user) {
             // check is passsword is correct
-            const ifPasswordMatch = await bcrypt.compare(req.body.password, user.password)
+            const ifPasswordMatch = await bcrypt.compare(password, user.password)
             if (ifPasswordMatch) {
                 //jwt token 
                   // after user has passed the auth of correct name and password use user info for token 
-                const accessToken = jwt.sign({ _id: user._id, name: user.name}, process.env.ACCESS_TOKEN_SECRET)// token secret is in .env file
-                console.log({ accessToken: accessToken })
-                res.json({accessToken})
+                const accessToken = jwt.sign({ _id: user._id, name: user.name }, process.env.ACCESS_TOKEN_SECRET)// token secret is in .env file
+                const refreshToken = jwt.sign({ _id: user._id, name: user.name }, process.env.REFRESH_TOKEN_SECRET)
+                res.cookie("accessToken", accessToken, { maxAge: 60000 })
+                
+                res.cookie("refreshToken", refreshToken, { maxAge: 30000000, httpOnly: true, secure: true, sameSite: 'strict' })
+                
+                //  res.setHeader('Content-Type', 'application/json');
+                // res.json({accessToken , refreshToken, username: user.name})
                 // req.session.isAuth = true// set  d session
-                // res.redirect(`/home?username=${encodeURIComponent(user.name)}`)
+                console.log("this is users name", user.name);
+               res.status(200).json({ accessToken, refreshToken, username: user.name });
             } else {
                 res.status(400).render("login", {message:"incorrect password"})
             }

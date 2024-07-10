@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GOALS</title>
     <link rel="icon" href="/public/images/_13794220.png" type="image/x-icon">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="stylesForLogin.css">
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/stylesForLogin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
         integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -82,46 +82,37 @@
 
 
 
-            const response = await fetch("/login",{
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                },
-                body: `name=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}` // Include password field in the body
-            })
-            
-            const data = await response.json()
-            
-            if(response.ok){
-                // to save jwt token
-                localStorage.setItem("accessToken", data.accessToken)
-
-                // the authenticated request
-                const accessToken = data.accessToken
-                const authResponse = await fetch("/login",{
-                    method: "GET",
-                    headers: {
-                        "Authorization": `Bearer ${accessToken}`
+          try{
+              const response = await fetch("/login", {
+                  method: "POST",
+                  headers: {
+                      "Content-Type": "application/x-www-form-urlencoded"
+                  },
+                  body: `name=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}` // Include password field in the body
+              })
+              
+              if (response.ok) {
+                const data = await response.json()
+                try{
+                    if(data.username){
+                         window.location.href = `/home?username=${encodeURIComponent(data.username)}`;
                     }
-                });
-                if(authResponse.ok){
-                    const authData = await authResponse.json()
-                    console.log(authData);
-                    // redirect to home page with useername
-                    window.location.href = `/home?username=${encodeURIComponent(username)}`;
-                } else if(authResponse.status === 401){
-                    alert("unathorized access. please login.")
-                } else{
-                    alert("an error occured")
+                } catch (error){
+                    console.log(error)
                 }
-                
-            } else if(response.status === 400){
-                alert("Incorrect password")
-            }else if(response.status === 404){
-                alert("User not found")
-            } else if(response.status === 500){
-                alert("server Error")
-            }
+                  // to save jwt token
+                //   localStorage.setItem("accessToken", data.accessToken)
+
+              } else if (response.status === 400) {
+                  alert("Incorrect password")
+              } else if (response.status === 404) {
+                  alert("User not found")
+              } else if (response.status === 500) {
+                  alert("server Error")
+              }
+          } catch(error){
+            console.log(error)
+          }
 
         })
 
