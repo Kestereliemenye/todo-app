@@ -319,7 +319,7 @@ h3{
     border-radius: 10px;
     height: 70px;
 }
-#search{
+#searchQuery{
     margin-top: 10px;
     margin-left: 60px;
     width: 35vw;
@@ -336,8 +336,8 @@ h3{
 #search-button{
    padding: 5px 10px;
    position: relative;
-   top: 30px;
-   left:-260px;
+   /* top: 7px; */
+   /* left: 20px; */
    border: 1px solid #f6cf92;
    background-color: white;
    cursor: pointer;
@@ -567,4 +567,35 @@ h3{
 }
 .hidden{
     display: none;
+}
+
+
+/* to display serach result */
+.dispSearch {
+    background-color: white;
+    padding: 0 10px;
+    width: 450px;
+    /* border: 2px solid black; */
+    border-radius: 3px;
+    height: auto;
+    position: absolute;
+    /* left: 400px; */
+    right: 284px;
+    top: 52px;
+    overflow: auto;
+    z-index: 1;
+}
+/* to edit the display items */
+.search-disp-item{
+    list-style-type: none;
+    margin-bottom: 7px;
+    margin-top: 3px;
+    background-color: #cccc;
+    border: 2px solid #cccc;
+    padding: 5px;
+    cursor: pointer;
+
+}
+.search-disp-item:hover{
+    border: 2px solid black;
 }

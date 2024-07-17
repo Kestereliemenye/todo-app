@@ -49,10 +49,24 @@ function authToken(req, res, next) {
     // console.log("Auth function called");
     const accesstoken = req.cookies.accessToken
     if (!accesstoken) {
-        if (renewToken(req, res)) {
-            next()
-        }
+        renewToken(req, res, next);
+            // if (tokenRenewed) {
+            //     // if token is renewd, re-verify the new acess token
+            //     const newAccessToken = req.cookies.accessToken;
+            //     jwt.verify(newAccessToken, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+            //         if (err) {
+            //             return res.status(403).json({valid: false, message: "Invalid token after renual"})
+            //         } else {
+            //             req.user = user
+            //             return next()
+            //         }
+            //     })
+
+            // } else {
+            //     return res.status(401).json({valid: false, message: "no access token and unable to renew "})
+            // }
     } else {
+        // verify the existing accesstoken
          jwt.verify(accesstoken, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
              if (err) { 
                  try {
@@ -63,7 +77,7 @@ function authToken(req, res, next) {
              } else {
                  req.user = user
                 //  console.log(user);
-                 next()
+                return next()
     
             }
     })
@@ -71,7 +85,7 @@ function authToken(req, res, next) {
 }
 
 // to renew token
-const renewToken = (req, res) => {
+const renewToken = (req, res, next) => {
     const refreshtoken = req.cookies.refreshToken
     let exist = false;
     if (!refreshtoken) {
@@ -81,9 +95,12 @@ const renewToken = (req, res) => {
              if (err) { 
               return res.json({valid: false, message: "invalid refresh token"})   
              } else {
-                 const accessToken = jwt.sign({ _id: user._id, name: user.name }, process.env.ACCESS_TOKEN_SECRET)
-                res.cookie("accessToken", accessToken, { maxAge: 60000 })
-                exist = true
+                 const accessToken = jwt.sign({ _id: user._id, name: user.name }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1m"})
+                 res.cookie("accessToken", accessToken, { maxAge: 60000, httpOnly: true })
+                 req.user = user
+                 next()
+                // return res.status(200).json({ valid: true, message: "Access token renewed successfully" });
+                exist = true // token refeshed succesfully
             }
     })
     }
@@ -150,7 +167,7 @@ app.post("/home/task", authToken,async (req, res) => {
 
 app.get("/home/task", authToken, async (req, res) => {
     // used the user details from the token
-    const userID = req.user._id
+    const userID = await req.user._id
     // console.log(userID);
     try {
         const tasks = await Task.find({userID})
@@ -199,17 +216,19 @@ app.put("/home/tasks/:taskid", async (req, res) => {
 
 
 // For collection
-app.post("/home/collection", async (req, res) => {
- const { title, details, usage , subtask} = req.body;
+app.post("/home/collection", authToken, async (req, res) => {
+    const { title, details, usage, subtask } = req.body;
+    const userID = await req.user._id
     console.log({title, details, usage, subtask})
-    if (!title || !details || !usage || !subtask) {
+    if (!title || !details || !usage || !subtask ||!userID) {
         return res.status(400).send("Missing required fields")
     }
     const newColl = new Collection({
         title,
         details,
         usage,
-        subtask
+        subtask,
+        userID
     }) 
     try {
         const savedColl = await newColl.save() // creates a nerw task from the  from d req
@@ -219,17 +238,18 @@ app.post("/home/collection", async (req, res) => {
     }
 })
 
-// to get task 
-app.get("/home/collection", async (req, res) => {
+// to get collection
+app.get("/home/collection",authToken, async (req, res) => {
+    const userid = req.user.id
 try {
-        const collection = await Collection.find();
-        res.json(collection)
+        const collection = await Collection.find({userid});
+        res.status(200).json(collection)
     } catch (error){
         res.status(500).json({error: error.message})
    }
 })
 
-// to delete task
+// to delete collection
 app.delete("/home/collection/:taskid", async (req, res) => {
  const taskID = req.params.taskid
     try {
@@ -243,8 +263,61 @@ app.delete("/home/collection/:taskid", async (req, res) => {
         }  
 })
 
+// to edit collection
+app.put("/home/collection/:taskid", authToken, async (req, res) => {
+    const {taskid: collID} = req.params
+    console.log(collID);
+    const { title, details, usage, subtask } = req.body
+    try {
+        const updateColl = await Collection.findByIdAndUpdate(collID, {
+            title,
+            details,
+            usage,
+            subtask
+        }, { new: true })
+        if (!updateColl) {
+          return  res.status(404).send("Collection not found")
+        }
+        res.json(updateColl)
+    } catch (error) {
+        console.log(error);
+        res.staus(500).send(error)
+    }
+})
 
+// to search tasks
+app.get("/search", authToken ,async(req, res) => {
+    const {query} = req.query
 
+    if (!query) {
+        return res.status(400).json({message: "search query is requierd"})
+    }
+    try {
+        // create a regular expression pattern for case-sensitive search
+        const regex = new RegExp(query, "i")
+        const tasks = await Collection.find({ title: regex })
+        
+        res.json(tasks)
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({message: "Server error"})
+    }
+})
+
+// to get searched task
+app.get("/search/:taskid", authToken,async(req, res) => {
+    const { taskid} = req.params
+    try {
+        const task = await Collection.findById(taskid)
+    if (!task) {
+        return res.status(404).json("Task not found")
+    } else {
+        res.status(200).json(task)
+    }
+    } catch (error) {
+        console.log(error);
+    }
+})
 
 
 

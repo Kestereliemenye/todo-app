@@ -116,7 +116,7 @@
             <!-- Type of task -->
             <div class="for-type">
                 <label for="type">Type:</label>
-                <select name="usage" id="usage">
+                <select name="usage" id="usage1">
                     <option value="school">School</option>
                     <option value="coding">Coding</option>
                     <option value="personal">Personal</option>
@@ -165,10 +165,18 @@
       <div class="search-task">
         <!-- search form -->
        <form action="" id="search-task">
-        <input type="search" id="search" placeholder="Search tasks...">
+        <input type="search" id="searchQuery" placeholder="Search tasks...">
         <!-- button -->
         <button type="submit" id="search-button">Search</button>
        </form>
+       <!-- To display search results -->
+       <div class="dispSearch">
+        <ul id="searchResults">
+
+        </ul>
+
+       </div>
+
       </div>
       <!-- Headers for display task -->
        <div class="ongoing">

@@ -1,5 +1,6 @@
 const popup = document.getElementById("popup2")
 const forColl = document.getElementById("create-collection")
+const dispSearch = document.getElementById("dispSearch")
 forColl.addEventListener("click", () => {
     popup.classList.toggle("active")
 })
@@ -42,6 +43,14 @@ const defMsg1 = document.getElementById("no-task-message")
       defMsg1.classList.remove("hidden");
       defMsg1.value = "no ongoing collection"
     }
+}
+    //Function to toggle form visibility of form
+    function toggleFormVisibility2(show) {
+        if (show) {
+            popup.classList.add("active"); // Show the form
+        } else {
+            popup.classList.remove("active"); // Hide the form
+        }
     }
 
 
@@ -56,7 +65,8 @@ createCollForm.addEventListener("submit", async (event) => {
     console.log(title);
     const details = document.getElementById("detail1").value
     const usage = document.getElementById("usage").value// gets the selected option
-    const subtask = document.getElementById("subTask").value
+    const subtask =  Array.from(document.querySelectorAll("#subtask input")).map(input => input.value);
+
 
     const coll = {
         title,
@@ -92,42 +102,51 @@ createCollForm.addEventListener("submit", async (event) => {
 const collBtn = document.getElementById("coll-btn")
 
 collBtn.addEventListener("click", async function () {
-try {
-    fetch("/home/collection")
-         .then(res => {
-            if (!res.ok) {
-                throw new Error("Network response was not okay: " + res.statusText);
+    try {
+        fetch("/home/collection")
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error("Network response was not okay: " + res.statusText);
+                }
+                return res.json();
+            })
+            .then(data => {
+                //check if there are no task
+                if (data.length === 0) {
+                    defGo(false); // Show the default message
+                } else {
+                    defGo(true); // Hide the default message
+                }
+                 displayTask(data)
+
+            })} catch (error) {
+                console.log(error);
             }
-            return res.json();
-        })
-        .then(data => {
-            //check if there are no task
-            if (data.length === 0) {
-                defGo(false); // Show the default message
-            } else {
-                defGo(true); // Hide the default message
-            }
-            //creating the li for d response
-            const taskList = document.getElementById("task-display");
-            taskList.innerHTML = "";
-            data.forEach((task, index) => {
-                const listItemDiv = document.createElement("div")
-                const delBtn = document.createElement("button")
-                delBtn.textContent = "Delete task"
-                delBtn.value = "Delete Collection"
-                const editBtn = document.createElement("button")
-                editBtn.textContent = "Edit task"
-                editBtn.value = "Edit Collection"
-                listItemDiv.id = "div-for-li"
-                const listItem = document.createElement("li")
-                listItem.className = "for-li"
-                const detBtnID2 = `det-btn1-${index}`
-                const subtBtn = `subt-btn-${index}`
-                const popUpID2 = `popup4-${index}`
-                const popUpID3 = `popup5-${index}`
-                const closeBtnID2 = `close-button4-${index}`
-                const closeBtnID3 = `close-button5-${index}`
-                listItemDiv.innerHTML = `<h3>Task ${index + 1}:</h3>
+})
+
+
+                //function to display task
+                function displayTask(data) {
+                    const taskList = document.getElementById("task-display");
+                    taskList.innerHTML = "";
+                    data.forEach((task, index) => {
+                        const listItemDiv = document.createElement("div")
+                        const delBtn = document.createElement("button")
+                        delBtn.textContent = "Delete Collection"
+                        delBtn.value = "Delete Collection"
+                        const editBtn = document.createElement("button")
+                        editBtn.textContent = "Edit collection"
+                        editBtn.value = "Edit Collection"
+                        listItemDiv.id = "div-for-li"
+                        const listItem = document.createElement("li")
+                        listItem.className = "for-li"
+                        const detBtnID2 = `det-btn1-${index}`
+                        const subtBtn = `subt-btn-${index}`
+                        const popUpID2 = `popup4-${index}`
+                        const popUpID3 = `popup5-${index}`
+                        const closeBtnID2 = `close-button4-${index}`
+                        const closeBtnID3 = `close-button5-${index}`
+                        listItemDiv.innerHTML = `<h3>Task ${index + 1}:</h3>
                 <hr>
                         <h4 class="task-title">Title</h4><span class="span-title">${task.title}</span>
                         <button class="task-detail"  id ="${detBtnID2}">Details</button><div class="popup-details" id="${popUpID2}">
@@ -156,52 +175,184 @@ try {
 
 
 
-const popupDet2 = document.getElementById(popUpID2)
-const popupDet3 = document.getElementById(popUpID3)
-const detBtn = document.getElementById(detBtnID2)
-const subt = document.getElementById(subtBtn)
-    detBtn.addEventListener("click", () => {
-    popupDet2.classList.toggle("active")
-    })
-    document.getElementById(closeBtnID2).addEventListener("click", () => {
-    popupDet2.classList.remove("active")
-    })
-    subt.addEventListener("click",()=>{
-    popupDet3.classList.toggle("active")
-    })          
-    document.getElementById(closeBtnID3).addEventListener("click", () => {
-    popupDet3.classList.remove("active")
-    })
+                        const popupDet2 = document.getElementById(popUpID2)
+                        const popupDet3 = document.getElementById(popUpID3)
+                        const detBtn = document.getElementById(detBtnID2)
+                        const subt = document.getElementById(subtBtn)
+                        detBtn.addEventListener("click", () => {
+                            popupDet2.classList.toggle("active")
+                        })
+                        document.getElementById(closeBtnID2).addEventListener("click", () => {
+                            popupDet2.classList.remove("active")
+                        })
+                        subt.addEventListener("click", () => {
+                            popupDet3.classList.toggle("active")
+                        })
+                        document.getElementById(closeBtnID3).addEventListener("click", () => {
+                            popupDet3.classList.remove("active")
+                        })
                 
 
-                // to delete a task 
-                delBtn.addEventListener("click", () => {
-                    try {
-                        fetch(`/home/collection/${task._id}`, {
-                            method: "DELETE",
-                            headers: {
-                                'Content-Type': 'application/json'
+                        // to delete a task 
+                        delBtn.addEventListener("click", () => {
+                            try {
+                                fetch(`/home/collection/${task._id}`, {
+                                    method: "DELETE",
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    }
+                                })
+                                    .then(res => {
+                                        if (!res.ok) {
+                                            throw new Error("Network response was not okay")
+                                        }
+                                        return res.json()
+                                    })
+                                    .then(task => {
+                                        console.log("Task deleted succesfully", task);
+                                        // to clear task from dom
+                                        delBtn.parentElement.remove()
+                                    
+                                    })
+                            } catch (error) {
+                                console.error(error)
                             }
                         })
-                            .then(res => {
-                                if (!res.ok) {
-                                    throw new Error("Network response was not okay")
+                        // to edit a task
+                        editBtn.addEventListener("click", () => {
+                            // open edit form with existing taask data
+                            document.getElementById("title1").value = task.title
+                            document.getElementById("detail1").value = task.details
+                            document.getElementById("usage1").value = task.usage
+                            document.getElementById("subtask").value = task.subtask
+                
+
+
+
+                            toggleFormVisibility2(true);
+                            // update form submisson for editing
+                            document.getElementById("collForm").onsubmit = async (event) => {
+                                event.preventDefault()
+                                // title = document.getElementById("title").value
+                                // details = document.getElementById("detail").value
+                                // usage = document.getElementById("usage").value
+
+                                const updatedColl = {
+                                    title: document.getElementById("title").value,
+                                    details: document.getElementById("detail").value,
+                                    usage: document.getElementById("usage").value,
+                                    subtasks: Array.from(document.querySelectorAll("#subtask input")).map(input => input.value)
                                 }
-                                return res.json()
-                            })
-                            .then(task => {
-                                console.log("Task deleted succesfully", task);
-                                // to clear task from dom
-                                delBtn.parentElement.remove()
-                                    
-                            })
-                    } catch (error) {
-                        console.error(error)
+
+                                try {
+                                    const response = await fetch(`/home/collection/${task._id}`, {
+                                        method: "PUT",
+                                        headers: {
+                                            "Content-Type": "application/json"
+                                        },
+                                        body: JSON.stringify(updatedColl)
+                                    })
+                                    if (!response.ok) {
+                                        throw new Error("Network response was not okay: " + response.statusText);
+                                    }
+                                    const data = await response.json();
+                                    console.log("Task updated", data);
+
+                                } catch (error) {
+                                    console.error(error)
+                            
+                                }
+                            }
+                        })
+
+                    })
+                }
+
+                        // to search task
+        document.getElementById("search-task").addEventListener("keyup", async (e) => {
+            e.preventDefault()
+            const query = document.getElementById("searchQuery").value
+
+            // If the query is empty clear the search results and return early
+            if (query.trim() === '') {
+                clearResults();
+                return;
+            }
+
+
+            try {
+                const response = await fetch(`/search?query=${encodeURIComponent(query)}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
                     }
                 })
-            })
+                if (!response.ok) {
+                    throw new Error('Netwotrk response was not okay', response.statusText)
+                }
+
+                const data = await response.json()
+                displayResult(data)
+
+                // function to display options
+                function displayResult(tasks) {
+                    const searchResults = document.getElementById('searchResults')
+                    searchResults.parentElement.style.display = 'block'
+                    searchResults.innerHTML = '';
+
+                    if (tasks.length === 0) {
+                        searchResults.innerHTML = '<li style="list-style-type: none;">No tasks found</li>';
+                        return;
+                    }
+
+                        tasks.forEach(task => {
+                    const listItem = document.createElement('li');
+                    listItem.className = "search-disp-item"
+                    listItem.textContent = `Title: ${task.title}, Details: ${task.details}, Usage: ${task.usage}, Subtask: ${task.subtask}`;
+                    searchResults.appendChild(listItem);
+
+                    // Add event listener to each listItem
+                    listItem.addEventListener("click", (e) => {
+                        const clickedListItem = e.target;
+                        if (clickedListItem) {
+                            const taskId = task._id; // Get the task ID from task object
+                            console.log(taskId);
+                            console.log(clickedListItem);
+                            fetchTaskDetails(taskId);
+                            searchResults.parentElement.style.display = 'none'
+                        }
+                    });
+                    });
+                  }
+               async function fetchTaskDetails(taskId){
+                    try {
+                        const response = await fetch(`/search/${taskId}`);
+                        if (!response.ok) {
+                            throw new Error("Network response was not okay: " + response.statusText);
+                        }
+                        const data = await response.json();
+                                console.log(`Fetched data: ${JSON.stringify(data)}`);
+                        displayTask2(data); // Display the fetched task
+                    } catch (error) {
+                        console.error(error);
+                    }
+                }
+                // to display the searched task
+                function displayTask2(data) {
+                    console.log([data]);
+                    displayTask([data])
+                }
+
+
+            } catch (error) {
+                console.error(error)
+            }
+
         })
-} catch (error) {
-    console.log(error);
+    
+    
+        function clearResults() {
+            const searchResults = document.getElementById('searchResults');
+            searchResults.innerHTML = '';
         }
-})
+

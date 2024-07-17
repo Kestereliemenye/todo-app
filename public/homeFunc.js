@@ -227,12 +227,88 @@ btn1.addEventListener("click", async function () {
             document.getElementById(closeBtnID).addEventListener("click", () => {
                 popupDet.classList.remove("active");
             });
-        });
+            // to delete a task
+            delBtn.addEventListener("click", () => {
+                try {
+                    fetch(`/home/tasks/${task._id}`, {
+                        method: "DELETE",
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                        .then(res => {
+                            if (!res.ok) {
+                                throw new Error("Network response was not okay")
+                            }
+                            return res.json()
+                        })
+                        .then(task => {
+                            console.log("Task deleted succesfully", task);
+                            // to clear task from dom
+                            delBtn.parentElement.remove()
+                            
+                        })
+                } catch (error) {
+                    console.error(error)
+                }
+            })
+            // TO EDIT TASK
+            editBtn.addEventListener("click", () => {
+                // open edit form with existing taask data
+                document.getElementById("title").value = task.title
+                document.getElementById("detail").value = task.details
+                document.getElementById("usage").value = task.usage
+                toggleFormVisibility(true);
+                // update form submisson for editing
+                document.getElementById("taskForm").onsubmit = async (event) => {
+                    event.preventDefault()
+                    // title = document.getElementById("title").value
+                    // details = document.getElementById("detail").value
+                    // usage = document.getElementById("usage").value
 
-    } catch (error) {
+                    const updatedTask = {
+                        title: document.getElementById("title").value,
+                        details: document.getElementById("detail").value,
+                        usage: document.getElementById("usage").value
+                    }
+
+                    try {
+                        const response = await fetch(`/home/tasks/${task._id}`, {
+                            method: "PUT",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify(updatedTask)
+                        })
+                        if (!response.ok) {
+                            throw new Error("Network response was not okay: " + response.statusText);
+                        }
+                        const data = await response.json();
+                        console.log("Task updated", data);
+
+                    } catch (error) {
+                        console.error(error)
+                            
+                    }
+            
+                }
+            })
+
+        }     )
+     } catch (error) {
         console.error("There was a problem with the fetch operation:", error);
     }
+    
 });
+
+  
+
+
+
+
+
+
+
 
 
 // const btn2 = document.getElementById("coll-btn")

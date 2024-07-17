@@ -87,7 +87,7 @@ const collSchema = new mongoose.Schema({
         required:true
     },
     subtask: {
-        type: String,
+        type: Array,
         required:true
     },
     userID: {
