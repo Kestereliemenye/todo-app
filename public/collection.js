@@ -1,6 +1,209 @@
 const popup = document.getElementById("popup2")
 const forColl = document.getElementById("create-collection")
 const dispSearch = document.getElementById("dispSearch")
+
+
+// for filter
+const mysearch = document.getElementById("searchQuery")
+            // for filter           
+const filter = document.querySelector("#filterIcon")
+const select = document.getElementById("filter-select")
+filter.addEventListener("click", () => {
+    select.classList.remove("hidden")
+    select.addEventListener("change", () => {
+        let selected = select.value
+        console.log(selected);
+        if (selected === "task-filter") {
+            mysearch.placeholder = "Search tasks...."
+                      
+            // to search task
+            document.getElementById("search-task").addEventListener("keyup", async (e) => {
+                e.preventDefault()
+                const query = document.getElementById("searchQuery").value
+            
+            
+                // If the query is empty clear the search results and return early
+                if (query.trim() === '') {
+                    clearResults();
+                    return;
+                }
+            
+
+
+
+                try {
+                    const response = await fetch(`/search/task?query=${encodeURIComponent(query)}`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    if (!response.ok) {
+                        throw new Error('Netwotrk response was not okay', response.statusText)
+                    }
+
+                    const data = await response.json()
+                    displayResult(data)
+
+                    // function to display options
+                    function displayResult(tasks) {
+                        const searchResults = document.getElementById('searchResults')
+                        searchResults.parentElement.style.display = 'block'
+                        searchResults.innerHTML = '';
+
+                        if (tasks.length === 0) {
+                            searchResults.innerHTML = '<li style="list-style-type: none;">No tasks found</li>';
+                            return;
+                        }
+
+                        tasks.forEach(task => {
+                            const listItem = document.createElement('li');
+                            listItem.className = "search-disp-item"
+                            listItem.textContent = `Title: ${task.title}, Details: ${task.details}, Usage: ${task.usage}`;
+                            searchResults.appendChild(listItem);
+
+                            // Add event listener to each listItem
+                            listItem.addEventListener("click", (e) => {
+                                const clickedListItem = e.target;
+                                if (clickedListItem) {
+                                    const taskId = task._id; // Get the task ID from task object
+                                    console.log(taskId);
+                                    console.log(clickedListItem);
+                                    fetchTaskDetails(taskId);
+                                    searchResults.parentElement.style.display = 'none'
+                                }
+                            });
+                        });
+                    }
+                    async function fetchTaskDetails(taskId) {
+                        try {
+                            const response = await fetch(`/search/${taskId}`);
+                            if (!response.ok) {
+                                throw new Error("Network response was not okay: " + response.statusText);
+                            }
+                            const data = await response.json();
+                            console.log(`Fetched data: ${JSON.stringify(data)}`);
+                            displayTask2(data); // Display the fetched task
+                        } catch (error) {
+                            console.error(error);
+                        }
+                    }
+                    // to display the searched task
+                    function displayTask2(data) {
+                        console.log([data]);
+                        displayTask([data])
+                    }
+
+
+                } catch (error) {
+                    console.error(error)
+                }
+
+            })
+        }
+         else if (selected === "coll-filter") {
+            mysearch.placeholder = "Search Collections...."
+                      
+
+
+
+            // to search collection
+            document.getElementById("search-task").addEventListener("keyup", async (e) => {
+                e.preventDefault()
+                const query = document.getElementById("searchQuery").value
+            
+            
+                // If the query is empty clear the search results and return early
+                if (query.trim() === '') {
+                    clearResults();
+                    return;
+                }
+            
+
+
+
+                try {
+                    const response = await fetch(`/search/coll/?query=${encodeURIComponent(query)}`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    if (!response.ok) {
+                        throw new Error('Netwotrk response was not okay', response.statusText)
+                    }
+
+                    const data = await response.json()
+                    displayResult(data)
+
+                    // function to display options
+                    function displayResult(tasks) {
+                        const searchResults = document.getElementById('searchResults')
+                        searchResults.parentElement.style.display = 'block'
+                        searchResults.innerHTML = '';
+
+                        if (tasks.length === 0) {
+                            searchResults.innerHTML = '<li style="list-style-type: none;">No collection found</li>';
+                            return;
+                        }
+
+                        tasks.forEach(task => {
+                            const listItem = document.createElement('li');
+                            listItem.className = "search-disp-item"
+                            listItem.textContent = `Title: ${task.title}, Details: ${task.details}, Usage: ${task.usage}, Subtask: ${task.subtask}`;
+                            searchResults.appendChild(listItem);
+
+                            // Add event listener to each listItem
+                            listItem.addEventListener("click", (e) => {
+                                const clickedListItem = e.target;
+                                if (clickedListItem) {
+                                    const taskId = task._id; // Get the task ID from task object
+                                    console.log(taskId);
+                                    console.log(clickedListItem);
+                                    fetchTaskDetails(taskId);
+                                    searchResults.parentElement.style.display = 'none'
+                                }
+                            });
+                        });
+                    }
+                    async function fetchTaskDetails(taskId) {
+                        try {
+                            const response = await fetch(`/search/coll/${taskId}`);
+                            if (!response.ok) {
+                                throw new Error("Network response was not okay: " + response.statusText);
+                            }
+                            const data = await response.json();
+                            console.log(`Fetched data: ${JSON.stringify(data)}`);
+                            displayTask2(data); // Display the fetched task
+                        } catch (error) {
+                            console.error(error);
+                        }
+                    }
+                    // to display the searched task
+                    function displayTask2(data) {
+                        console.log([data]);
+                        displayTask([data])
+                    }
+
+
+                } catch (error) {
+                    console.error(error)
+                }
+
+            })
+    
+
+        }
+        
+
+            function clearResults() {
+                const searchResults = document.getElementById('searchResults');
+                searchResults.innerHTML = '';
+            }
+    })
+})
+        
+      
 forColl.addEventListener("click", () => {
     popup.classList.toggle("active")
 })
@@ -53,6 +256,10 @@ const defMsg1 = document.getElementById("no-task-message")
         }
     }
 
+
+
+
+    
 
 
 
@@ -267,92 +474,3 @@ collBtn.addEventListener("click", async function () {
 
                     })
                 }
-
-                        // to search task
-        document.getElementById("search-task").addEventListener("keyup", async (e) => {
-            e.preventDefault()
-            const query = document.getElementById("searchQuery").value
-
-            // If the query is empty clear the search results and return early
-            if (query.trim() === '') {
-                clearResults();
-                return;
-            }
-
-
-            try {
-                const response = await fetch(`/search?query=${encodeURIComponent(query)}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                if (!response.ok) {
-                    throw new Error('Netwotrk response was not okay', response.statusText)
-                }
-
-                const data = await response.json()
-                displayResult(data)
-
-                // function to display options
-                function displayResult(tasks) {
-                    const searchResults = document.getElementById('searchResults')
-                    searchResults.parentElement.style.display = 'block'
-                    searchResults.innerHTML = '';
-
-                    if (tasks.length === 0) {
-                        searchResults.innerHTML = '<li style="list-style-type: none;">No tasks found</li>';
-                        return;
-                    }
-
-                        tasks.forEach(task => {
-                    const listItem = document.createElement('li');
-                    listItem.className = "search-disp-item"
-                    listItem.textContent = `Title: ${task.title}, Details: ${task.details}, Usage: ${task.usage}, Subtask: ${task.subtask}`;
-                    searchResults.appendChild(listItem);
-
-                    // Add event listener to each listItem
-                    listItem.addEventListener("click", (e) => {
-                        const clickedListItem = e.target;
-                        if (clickedListItem) {
-                            const taskId = task._id; // Get the task ID from task object
-                            console.log(taskId);
-                            console.log(clickedListItem);
-                            fetchTaskDetails(taskId);
-                            searchResults.parentElement.style.display = 'none'
-                        }
-                    });
-                    });
-                  }
-               async function fetchTaskDetails(taskId){
-                    try {
-                        const response = await fetch(`/search/${taskId}`);
-                        if (!response.ok) {
-                            throw new Error("Network response was not okay: " + response.statusText);
-                        }
-                        const data = await response.json();
-                                console.log(`Fetched data: ${JSON.stringify(data)}`);
-                        displayTask2(data); // Display the fetched task
-                    } catch (error) {
-                        console.error(error);
-                    }
-                }
-                // to display the searched task
-                function displayTask2(data) {
-                    console.log([data]);
-                    displayTask([data])
-                }
-
-
-            } catch (error) {
-                console.error(error)
-            }
-
-        })
-    
-    
-        function clearResults() {
-            const searchResults = document.getElementById('searchResults');
-            searchResults.innerHTML = '';
-        }
-

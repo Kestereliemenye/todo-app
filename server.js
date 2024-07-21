@@ -286,7 +286,24 @@ app.put("/home/collection/:taskid", authToken, async (req, res) => {
 })
 
 // to search tasks
-app.get("/search", authToken ,async(req, res) => {
+app.get("/search/task", authToken ,async(req, res) => {
+    const {query} = req.query
+
+    if (!query) {
+        return res.status(400).json({message: "search query is requierd"})
+    }
+    try {
+        // create a regular expression pattern for case-sensitive search
+        const regex = new RegExp(query, "i")
+        const tasks = await Task.find({ title: regex })
+        res.json(tasks)
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({message: "Server error"})
+    }
+})
+// to search collections
+app.get("/search/coll", authToken ,async(req, res) => {
     const {query} = req.query
 
     if (!query) {
@@ -296,7 +313,6 @@ app.get("/search", authToken ,async(req, res) => {
         // create a regular expression pattern for case-sensitive search
         const regex = new RegExp(query, "i")
         const tasks = await Collection.find({ title: regex })
-        
         res.json(tasks)
     } catch (error) {
         console.error(error)
@@ -304,8 +320,8 @@ app.get("/search", authToken ,async(req, res) => {
     }
 })
 
-// to get searched task
-app.get("/search/:taskid", authToken,async(req, res) => {
+// to get searched collection
+app.get("/search/coll/:taskid", authToken,async(req, res) => {
     const { taskid} = req.params
     try {
         const task = await Collection.findById(taskid)
@@ -318,6 +334,21 @@ app.get("/search/:taskid", authToken,async(req, res) => {
         console.log(error);
     }
 })
+// to get searched task
+app.get("/search/:taskid", authToken,async(req, res) => {
+    const { taskid} = req.params
+    try {
+        const task = await Task.findById(taskid)
+    if (!task) {
+        return res.status(404).json("Task not found")
+    } else {
+        res.status(200).json(task)
+    }
+    } catch (error) {
+        console.log(error);
+    }
+})
+
 
 
 

@@ -294,7 +294,7 @@ h3{
 .display-container{
     margin-top: 10px;
     display: flex;
-    flex-wrap: wrap;
+    /* flex-wrap: wrap; */
     gap: 1rem;
     flex-direction: column;
     justify-content: center;
@@ -310,8 +310,9 @@ h3{
 }
 .search-task{
     display: flex;
-    /* align-items: center; */
-    justify-content: center;
+    /* flex-direction: row; */
+    align-items: center;
+    justify-content: space-around;
     margin-top: -400px;
     margin-left: 10%;
     width: 80%;
@@ -320,8 +321,10 @@ h3{
     height: 70px;
 }
 #searchQuery{
-    margin-top: 10px;
-    margin-left: 60px;
+    /* margin-top: -30px; */
+    /* position: relative; */
+    top: 20px;
+    /* margin-left: 60px; */
     width: 35vw;
     height: 5vh;
     outline: none;
@@ -335,7 +338,8 @@ h3{
 }
 #search-button{
    padding: 5px 10px;
-   position: relative;
+   /* position: relative; */
+    /* top: -10px; */
    /* top: 7px; */
    /* left: 20px; */
    border: 1px solid #f6cf92;
@@ -598,4 +602,23 @@ h3{
 }
 .search-disp-item:hover{
     border: 2px solid black;
+}
+
+/* for search filter */
+.filter{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    /* border: 1px solid black; */
+    width: 100px;
+    /* position: relative; */
+    left: -90px;
+    margin-top: 3px;
+}
+.filter i{
+    cursor: pointer;
+}
+.filter i:active{
+    transform: scale(0.9K);
 }

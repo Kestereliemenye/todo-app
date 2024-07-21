@@ -163,9 +163,18 @@
         <!-- To search for task -->
     <div class="display-container">
       <div class="search-task">
+        <!-- fiter -->
+        <div class="filter">
+            <p id="search-filter-p">Filter Search</p>
+            <i class="fa fa-filter" id="filterIcon" aria-hidden="true"></i>
+            <select name="task" id="filter-select" class="hidden">
+                <option value="task-filter">Tasks</option>
+                <option value="coll-filter">Collections</option>
+            </select>
+        </div>
         <!-- search form -->
        <form action="" id="search-task">
-        <input type="search" id="searchQuery" placeholder="Search tasks...">
+        <input type="search" id="searchQuery" placeholder="Search">
         <!-- button -->
         <button type="submit" id="search-button">Search</button>
        </form>
