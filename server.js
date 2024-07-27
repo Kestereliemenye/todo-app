@@ -139,6 +139,19 @@ app.get("/home", authToken, (req, res) => {
     // console.log(username);
     res.render("home", {username: username})
 })
+app.get("/home/profile", authToken, (req, res) => {
+    const username = req.query.username
+    console.log(username);
+    res.render("profile", {username:username})
+})
+
+
+
+
+
+
+
+
 
 // CRUD FOR TASKS
 //post route to create

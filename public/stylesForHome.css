@@ -622,3 +622,12 @@ h3{
 .filter i:active{
     transform: scale(0.9K);
 }
+
+/* to get profile */
+
+#user-circle{
+    cursor: pointer;
+}
+#user-circle:active{
+    transform: scale(0.9);
+}
